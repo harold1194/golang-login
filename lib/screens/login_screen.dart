@@ -32,7 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
-        // Login successful, proceed to the next screen
+        // Login successful, proceed to the next
+        if (!mounted) return;
         Navigator.pushAndRemoveUntil(
             context, homeScreenRoute, (route) => false);
         setState(() {
@@ -47,6 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -101,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16.0),
               Container(
                 width: MediaQuery.of(context).size.width / 1.3,
-                decoration: ShapeDecoration(
+                decoration: const ShapeDecoration(
                     shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
                     Radius.circular(25),
