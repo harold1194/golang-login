@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:golang_login/screens/register_screen.dart';
+import 'package:golang_login/screens/login_screen.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../routes/my_routes.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+import 'home.dart';
+
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final formKey = GlobalKey<FormState>();
+  TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
@@ -21,38 +22,44 @@ class _LoginScreenState extends State<LoginScreen> {
   String _successMessage = '';
   String _errorMessage = '';
 
-  Future<void> _login() async {
+  Future<void> registerUser() async {
     if (formKey.currentState!.validate()) {
-      final String email = emailController.text;
-      final String password = passwordController.text;
+      String username = usernameController.text;
+      String email = emailController.text;
+      String password = passwordController.text;
 
-      // Perform the login request
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/api/login'),
-        body: jsonEncode({'email': email, 'password': password}),
-        headers: {'Content-Type': 'application/json'},
+      // Call your backend API or perform any necessary operations to save the user
+      Map<String, dynamic> requestBody = {
+        'username': username,
+        'email': email,
+        'password': password,
+      };
+
+      var url = Uri.parse('http://10.0.2.2:8080/api/register');
+      var response = await http.post(url, body: requestBody);
+      // Show success message if registration is successful
+      setState(() {
+        _successMessage = 'Successfully Registered';
+        _errorMessage = '';
+      });
+
+      // Navigate to home screen
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
-      if (response.statusCode == 200) {
-        // Login successful, proceed to the next
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-            context, homeScreenRoute, (route) => false);
-        setState(() {
-          _successMessage = 'Login Successfull';
-          _errorMessage = '';
-        });
-      } else {
-        // Login failed, display error message
-
-        setState(() {
-          _errorMessage = 'Login Failed';
-        });
-      }
+    } else {
+      setState(() {
+        _successMessage = '';
+        _errorMessage = '';
+      });
     }
   }
 
   @override
   void dispose() {
+    usernameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -65,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
         automaticallyImplyLeading: false,
         centerTitle: true,
         elevation: 0,
-        title: const Text('Login'),
+        title: const Text('Register'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -75,10 +82,24 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextFormField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  prefixIcon: const Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                validator: (value) {
+                  return value!.isEmpty ? "Please enter your username" : null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
                 controller: emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: const Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.email),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -122,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width / 1.5,
                   child: ElevatedButton(
-                    onPressed: _login,
+                    onPressed: registerUser,
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.blue,
@@ -137,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text('Login'),
+                    child: const Text('Sign Up'),
                   ),
                 ),
               ),
@@ -146,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    "Don't have an account? ",
+                    "Already have an account ",
                     style: TextStyle(fontSize: 16),
                   ),
                   InkWell(
@@ -154,12 +175,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const RegisterScreen(),
+                          builder: (context) => const LoginScreen(),
                         ),
                       );
                     },
                     child: const Text(
-                      "Sign up",
+                      "Sign in",
                       style: TextStyle(
                         fontSize: 16,
                         decoration: TextDecoration.underline,
