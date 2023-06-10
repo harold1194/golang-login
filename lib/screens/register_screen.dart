@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:golang_login/screens/login_screen.dart';
 import 'package:http/http.dart' as http;
 
+import '../widgets/my_app_bar.dart';
 import 'home.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -68,11 +69,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        elevation: 0,
-        title: const Text('Register'),
+      appBar: const MyAppBar(
+        isAutoImplyLeading: false,
+        title: 'Register',
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

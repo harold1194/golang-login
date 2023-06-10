@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:golang_login/auth/auth_provider.dart';
 import 'package:golang_login/screens/register_screen.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../routes/my_routes.dart';
+import '../widgets/my_app_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,6 +37,10 @@ class _LoginScreenState extends State<LoginScreen> {
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        authProvider.login();
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setBool('isLoggedIn', true);
         // Login successful, proceed to the next
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
@@ -52,6 +60,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLogginIn = prefs.getBool('isLoggedIn') ?? false;
+
+    if (isLogginIn) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.login();
+
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        homeScreenRoute,
+        (route) => false,
+      );
+    }
+  }
+
+  @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
@@ -60,12 +91,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        elevation: 0,
-        title: const Text('Login'),
+      appBar: const MyAppBar(
+        isAutoImplyLeading: false,
+        title: 'Login',
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
