@@ -315,7 +315,8 @@ class _AddAttendanceScreenState extends State<AddAttendanceScreen> {
                     ),
                   ],
                 ),
-                ElevatedButton(onPressed: _saveAttendance, child: Text("save"))
+                ElevatedButton(
+                    onPressed: _saveAttendance, child: const Text("save"))
               ],
             ),
           ),
